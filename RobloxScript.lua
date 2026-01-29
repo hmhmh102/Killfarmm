@@ -1,4 +1,3 @@
--- ===== AUTO-KILL SCRIPT START =====
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -267,34 +266,186 @@ LocalPlayer.Idled:Connect(function()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
--- ===== GUI SETUP (UNCHANGED) =====
--- [Your GUI code stays exactly the same]
+local Screen = Instance.new("ScreenGui")
+local Main = Instance.new("Frame")
+local MainCorner = Instance.new("UICorner")
+local TitleBar = Instance.new("Frame")
+local TitleCorner = Instance.new("UICorner")
+local Title = Instance.new("TextLabel")
+local CloseButton = Instance.new("TextButton")
+local FpsLabel = Instance.new("TextLabel")
+local TimeLabel = Instance.new("TextLabel")
+local ExecLabel = Instance.new("TextLabel")
+local WhitelistToggle = Instance.new("TextButton")
+local WeakerToggle = Instance.new("TextButton")
+local StartButton = Instance.new("TextButton")
+local StopButton = Instance.new("TextButton")
+
+Screen.Parent = game:GetService("CoreGui")
+Screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Screen.ResetOnSpawn = false
+
+Main.Parent = Screen
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Main.BackgroundTransparency = 0.1
+Main.Position = UDim2.new(0.5, -90, 0.1, 0)
+Main.Size = UDim2.new(0, 180, 0, 150)
+
+TitleBar.Parent = Main
+TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TitleBar.BackgroundTransparency = 0.1
+TitleBar.Size = UDim2.new(1, 0, 0, 22)
+
+TitleCorner.Parent = TitleBar
+TitleCorner.CornerRadius = UDim.new(0, 4)
+
+MainCorner.Parent = Main
+MainCorner.CornerRadius = UDim.new(0, 4)
+
+Title.Parent = TitleBar
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 8, 0, 0)
+Title.Size = UDim2.new(1, -32, 1, 0)
+Title.Font = Enum.Font.Code
+Title.Text = "Auto Kill Control"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 13
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+CloseButton.Parent = TitleBar
+CloseButton.BackgroundTransparency = 1
+CloseButton.Position = UDim2.new(1, -20, 0, 0)
+CloseButton.Size = UDim2.new(0, 20, 1, 0)
+CloseButton.Font = Enum.Font.Code
+CloseButton.Text = "×"
+CloseButton.TextSize = 14
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.AutoButtonColor = false
+
+FpsLabel.Parent = Main
+FpsLabel.BackgroundTransparency = 1
+FpsLabel.Position = UDim2.new(0, 8, 0, 26)
+FpsLabel.Size = UDim2.new(1, -10, 0, 18)
+FpsLabel.Font = Enum.Font.Code
+FpsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+FpsLabel.TextSize = 13
+FpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+TimeLabel.Parent = Main
+TimeLabel.BackgroundTransparency = 1
+TimeLabel.Position = UDim2.new(0, 8, 0, 46)
+TimeLabel.Size = UDim2.new(1, -10, 0, 18)
+TimeLabel.Font = Enum.Font.Code
+TimeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TimeLabel.TextSize = 13
+TimeLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+ExecLabel.Parent = Main
+ExecLabel.BackgroundTransparency = 1
+ExecLabel.Position = UDim2.new(0, 8, 0, 66)
+ExecLabel.Size = UDim2.new(1, -10, 0, 18)
+ExecLabel.Font = Enum.Font.Code
+ExecLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecLabel.TextSize = 13
+ExecLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+WhitelistToggle.Parent = Main
+WhitelistToggle.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+WhitelistToggle.Position = UDim2.new(0, 8, 0, 88)
+WhitelistToggle.Size = UDim2.new(1, -16, 0, 18)
+WhitelistToggle.Font = Enum.Font.Code
+WhitelistToggle.TextColor3 = Color3.fromRGB(0, 255, 0)
+WhitelistToggle.TextSize = 13
+WhitelistToggle.Text = "Whitelist Friends: ON"
+
+WeakerToggle.Parent = Main
+WeakerToggle.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+WeakerToggle.Position = UDim2.new(0, 8, 0, 108)
+WeakerToggle.Size = UDim2.new(1, -16, 0, 18)
+WeakerToggle.Font = Enum.Font.Code
+WeakerToggle.TextColor3 = Color3.fromRGB(0, 255, 0)
+WeakerToggle.TextSize = 13
+WeakerToggle.Text = "Kill Weaker Only: ON"
+
+StartButton.Parent = Main
+StartButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+StartButton.Position = UDim2.new(0, 8, 0, 128)
+StartButton.Size = UDim2.new(0, 78, 0, 18)
+StartButton.Font = Enum.Font.Code
+StartButton.TextColor3 = Color3.fromRGB(0, 255, 0)
+StartButton.TextSize = 13
+StartButton.Text = "Start"
+
+StopButton.Parent = Main
+StopButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+StopButton.Position = UDim2.new(0, 94, 0, 128)
+StopButton.Size = UDim2.new(0, 78, 0, 18)
+StopButton.Font = Enum.Font.Code
+StopButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+StopButton.TextSize = 13
+StopButton.Text = "Stop"
+
+local Dragging = false
+local DragInput, MousePos, FramePos
+
+TitleBar.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        Dragging = true
+        MousePos = Input.Position
+        FramePos = Main.Position
+        Input.Changed:Connect(function()
+            if Input.UserInputState == Enum.UserInputState.End then
+                Dragging = false
+            end
+        end)
+    end
+end)
+
+TitleBar.InputChanged:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+        DragInput = Input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+    if Input == DragInput and Dragging then
+        local Delta = Input.Position - MousePos
+        Main.Position = UDim2.new(FramePos.X.Scale, FramePos.X.Offset + Delta.X, FramePos.Y.Scale, FramePos.Y.Offset + Delta.Y)
+    end
+end)
+
+WhitelistToggle.MouseButton1Click:Connect(function()
+    WhitelistFriends = not WhitelistFriends
+    WhitelistToggle.Text = "Whitelist Friends: " .. (WhitelistFriends and "ON" or "OFF")
+    WhitelistToggle.TextColor3 = WhitelistFriends and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+    UpdateWhitelist()
+end)
+
+WeakerToggle.MouseButton1Click:Connect(function()
+    KillOnlyWeaker = not KillOnlyWeaker
+    WeakerToggle.Text = "Kill Weaker Only: " .. (KillOnlyWeaker and "ON" or "OFF")
+    WeakerToggle.TextColor3 = KillOnlyWeaker and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+    if not KillOnlyWeaker then
+        getgenv().TempWhitelistStronger = {}
+    end
+end)
+
+StartButton.MouseButton1Click:Connect(function()
+    Running = true
+    StartTime = os.time()
+end)
+
+StopButton.MouseButton1Click:Connect(function()
+    Running = false
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    Screen:Destroy()
+end)
 
 RunService.RenderStepped:Connect(function()
     FpsLabel.Text = "fps: " .. math.floor(1/RunService.RenderStepped:Wait())
     TimeLabel.Text = "time: " .. os.date("%H:%M:%S")
     local Elapsed = os.time() - StartTime
     ExecLabel.Text = string.format("exec: %02d:%02d:%02d", Elapsed/3600%24, Elapsed/60%60, Elapsed%60)
-end)
-
--- ===== COMPACT SERVER HOP WHEN ONLY 1 PLAYER =====
-local HttpService, TeleportService, PlaceId = game:GetService("HttpService"), game:GetService("TeleportService"), game.PlaceId
-
-task.spawn(function()
-    while task.wait(5) do
-        if #game:GetService("Players"):GetPlayers() <= 1 then
-            local servers, cursor = {}, nil
-            repeat
-                local url = "https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?sortOrder=Asc&limit=100"
-                if cursor then url = url.."&cursor="..cursor end
-                local success, response = pcall(game.HttpGet, game, url)
-                if not success or not response then break end
-                local data = HttpService:JSONDecode(response)
-                for _, s in ipairs(data.data) do if s.playing < s.maxPlayers and s.id ~= game.JobId then table.insert(servers, s.id) end end
-                cursor = data.nextPageCursor
-            until not cursor
-            if #servers > 0 then TeleportService:TeleportToPlaceInstance(PlaceId, servers[math.random(#servers)], game.Players.LocalPlayer) end
-            break
-        end
-    end
 end)

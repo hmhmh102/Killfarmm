@@ -30,7 +30,7 @@ local function Hop()
                     getgenv().AutoStartEnabled = true
                     getgenv().ScriptLoaded = nil
                     getgenv().AutoKillLoaded = nil
-                    loadstring(game:HttpGet('https://raw.githubusercontent.com/Pxrson/Scripts/refs/heads/main/Main/muscle%20legends/auto%20kill/code.lua'))()
+                    loadstring(game:HttpGet('https://raw.githubusercontent.com/hmhmh102/Killfarmm/main/RobloxScript.lua'))()
                 ]])
                 TeleportService:TeleportToPlaceInstance(game.PlaceId, Server.id, LocalPlayer)
                 return
@@ -45,7 +45,7 @@ local function Hop()
 end
 
 getgenv().AutoStartEnabled = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Pxrson/Scripts/refs/heads/main/Main/muscle%20legends/auto%20kill/code.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hmhmh102/Killfarmm/main/RobloxScript.lua", true))()
 
 spawn(function()
     while true do

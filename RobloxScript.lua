@@ -11,7 +11,6 @@ local LocalPlayer = Players.LocalPlayer
 if getgenv().AutoKillLoaded then return end
 getgenv().AutoKillLoaded = true
 
--- AUTO SERVER HOP SETTINGS
 local AUTO_SERVER_HOP = true
 local SERVER_HOP_INTERVAL = 60
 local LastServerHop = os.clock()

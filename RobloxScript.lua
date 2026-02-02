@@ -1,3 +1,4 @@
+-- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -8,13 +9,16 @@ local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 
+-- ANTI DOUBLE LOAD
 if getgenv().AutoKillLoaded then return end
 getgenv().AutoKillLoaded = true
 
+-- SERVER HOP SETTINGS
 local AUTO_SERVER_HOP = true
 local SERVER_HOP_INTERVAL = 60
 local LastServerHop = os.clock()
 
+-- HIGH SERVER ONLY HOP
 local function ServerHop()
     local PlaceId = game.PlaceId
     local JobId = game.JobId
@@ -22,31 +26,44 @@ local function ServerHop()
     local success, servers = pcall(function()
         return HttpService:JSONDecode(
             game:HttpGet(
-                "https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
+                "https://games.roblox.com/v1/games/"
+                .. PlaceId
+                .. "/servers/Public?sortOrder=Desc&limit=100"
             )
         )
     end)
 
-    if success and servers and servers.data then
-        for _, server in ipairs(servers.data) do
-            if server.id ~= JobId and server.playing < server.maxPlayers then
-                TeleportService:TeleportToPlaceInstance(PlaceId, server.id, LocalPlayer)
-                return
-            end
+    if not success or not servers or not servers.data then return end
+
+    for _, server in ipairs(servers.data) do
+        local filledPercent = server.playing / server.maxPlayers
+
+        if server.id ~= JobId
+        and server.playing >= 10          -- skip dead servers
+        and filledPercent >= 0.6          -- high population only
+        then
+            TeleportService:TeleportToPlaceInstance(
+                PlaceId,
+                server.id,
+                LocalPlayer
+            )
+            return
         end
     end
 end
 
-local Character, Humanoid, Hand, Punch, Animator
-local LastAttack, LastRespawn, LastCheck = 0, 0, 0
+-- VARIABLES
+local Character, Humanoid, Hand, Punch
+local LastAttack = 0
 local Running = true
-local StartTime = os.time()
+
 local WhitelistFriends = true
 local KillOnlyWeaker = true
 
 getgenv().WhitelistedPlayers = getgenv().WhitelistedPlayers or {}
 getgenv().TempWhitelistStronger = getgenv().TempWhitelistStronger or {}
 
+-- BLOCKED ANIMS
 local BlockedAnimations = {
     ["rbxassetid://3638729053"] = true,
     ["rbxassetid://3638749874"] = true,
@@ -54,13 +71,16 @@ local BlockedAnimations = {
     ["rbxassetid://102357151005774"] = true
 }
 
+-- STAT HELPERS
 local function GetPlayerStatValue(Player, StatNames)
     if not Player then return nil end
     if type(StatNames) == "string" then StatNames = {StatNames} end
+
     for _, Name in ipairs(StatNames) do
         local Attr = Player:GetAttribute(Name)
         if Attr ~= nil then return tonumber(Attr) end
     end
+
     local stats = Player:FindFirstChild("leaderstats")
     if stats then
         for _, Name in ipairs(StatNames) do
@@ -80,6 +100,7 @@ local function GetTargetHealth(Player)
     return hum and hum.MaxHealth or 100
 end
 
+-- CHARACTER UPDATE
 local function UpdateAll()
     Character = LocalPlayer.Character
     Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
@@ -87,12 +108,14 @@ local function UpdateAll()
     Punch = Character and Character:FindFirstChild("Punch")
 end
 
+-- KILL CHECK
 local function ShouldKillPlayer(player)
     if not KillOnlyWeaker then return true end
     local hits = math.ceil(GetTargetHealth(player) / GetLocalPlayerDamage())
     return hits <= 5
 end
 
+-- CHARACTER RESPAWN
 LocalPlayer.CharacterAdded:Connect(function()
     task.wait(1)
     UpdateAll()
@@ -100,12 +123,15 @@ end)
 
 UpdateAll()
 
+-- ANTI AFK
 LocalPlayer.Idled:Connect(function()
     VirtualUser:CaptureController()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
+-- MAIN LOOP
 RunService.RenderStepped:Connect(function()
+    -- SERVER HOP
     if AUTO_SERVER_HOP and os.clock() - LastServerHop >= SERVER_HOP_INTERVAL then
         LastServerHop = os.clock()
         ServerHop()
@@ -118,7 +144,9 @@ RunService.RenderStepped:Connect(function()
 
     if not Punch then
         local tool = LocalPlayer.Backpack:FindFirstChild("Punch")
-        if tool then Humanoid:EquipTool(tool) end
+        if tool then
+            Humanoid:EquipTool(tool)
+        end
         Punch = Character:FindFirstChild("Punch")
         return
     end
@@ -134,11 +162,11 @@ RunService.RenderStepped:Connect(function()
             local root = char and char:FindFirstChild("HumanoidRootPart")
 
             if hum and head and root and hum.Health > 0 then
-                local anchored = root.Anchored
+                local wasAnchored = root.Anchored
                 root.Anchored = true
                 firetouchinterest(head, Hand, 0)
                 firetouchinterest(head, Hand, 1)
-                root.Anchored = anchored
+                root.Anchored = wasAnchored
             end
         end
     end

@@ -1,4 +1,3 @@
--- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -9,16 +8,13 @@ local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- ANTI DOUBLE LOAD
 if getgenv().AutoKillLoaded then return end
 getgenv().AutoKillLoaded = true
 
--- SERVER HOP SETTINGS
 local AUTO_SERVER_HOP = true
 local SERVER_HOP_INTERVAL = 60
 local LastServerHop = os.clock()
 
--- HIGH SERVER ONLY HOP
 local function ServerHop()
     local PlaceId = game.PlaceId
     local JobId = game.JobId
@@ -52,7 +48,6 @@ local function ServerHop()
     end
 end
 
--- VARIABLES
 local Character, Humanoid, Hand, Punch
 local LastAttack = 0
 local Running = true
@@ -63,7 +58,6 @@ local KillOnlyWeaker = true
 getgenv().WhitelistedPlayers = getgenv().WhitelistedPlayers or {}
 getgenv().TempWhitelistStronger = getgenv().TempWhitelistStronger or {}
 
--- BLOCKED ANIMS
 local BlockedAnimations = {
     ["rbxassetid://3638729053"] = true,
     ["rbxassetid://3638749874"] = true,
@@ -71,7 +65,6 @@ local BlockedAnimations = {
     ["rbxassetid://102357151005774"] = true
 }
 
--- STAT HELPERS
 local function GetPlayerStatValue(Player, StatNames)
     if not Player then return nil end
     if type(StatNames) == "string" then StatNames = {StatNames} end
@@ -100,7 +93,6 @@ local function GetTargetHealth(Player)
     return hum and hum.MaxHealth or 100
 end
 
--- CHARACTER UPDATE
 local function UpdateAll()
     Character = LocalPlayer.Character
     Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
@@ -108,14 +100,12 @@ local function UpdateAll()
     Punch = Character and Character:FindFirstChild("Punch")
 end
 
--- KILL CHECK
 local function ShouldKillPlayer(player)
     if not KillOnlyWeaker then return true end
     local hits = math.ceil(GetTargetHealth(player) / GetLocalPlayerDamage())
     return hits <= 5
 end
 
--- CHARACTER RESPAWN
 LocalPlayer.CharacterAdded:Connect(function()
     task.wait(1)
     UpdateAll()
@@ -123,13 +113,11 @@ end)
 
 UpdateAll()
 
--- ANTI AFK
 LocalPlayer.Idled:Connect(function()
     VirtualUser:CaptureController()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
--- MAIN LOOP
 RunService.RenderStepped:Connect(function()
     -- SERVER HOP
     if AUTO_SERVER_HOP and os.clock() - LastServerHop >= SERVER_HOP_INTERVAL then
